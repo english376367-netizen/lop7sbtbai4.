@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit 4 – Music and Arts | Interactive Practice</title>
+<style>
+:root{--blue:#087ea4;--light:#e8f7fc;--green:#188754;--red:#c0392b;--ink:#17324d}
+*{box-sizing:border-box}body{margin:0;background:#f3f8fb;color:var(--ink);font:16px/1.55 Arial,sans-serif}
+header{background:linear-gradient(120deg,#087ea4,#4bb6d1);color:white;padding:24px 16px;text-align:center}
+header h1{margin:0 0 6px;font-size:clamp(22px,4vw,32px)}header p{margin:0}
+main{max-width:1000px;margin:auto;padding:16px}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+nav button,.btn{border:0;border-radius:10px;background:var(--blue);color:white;padding:10px 14px;cursor:pointer;font-weight:700}
+nav button:hover,.btn:hover{filter:brightness(.92)}.panel{background:white;border-radius:14px;padding:18px;margin:14px 0;box-shadow:0 3px 14px #17324d12}
+h2{margin-top:0;color:#087ea4;font-size:21px}.q{padding:13px;border:1px solid #d8e7ed;border-radius:10px;margin:12px 0}
+.options{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.options label{display:flex;gap:7px;align-items:center;background:#f3f9fc;border:1px solid #d7e8ef;border-radius:8px;padding:8px 10px;cursor:pointer}
+input[type=radio]{accent-color:#087ea4}.blank{display:inline-block;min-width:100px}
+.feedback{margin-top:8px;font-weight:700}.correct{color:var(--green)}.wrong{color:var(--red)}
+.explain{display:none;background:#fff8df;border-left:4px solid #efc34a;padding:10px 12px;margin-top:8px;border-radius:5px;white-space:pre-line}.explain b{color:#7b5b00}.q.unanswered{border-color:#d8e7ed}.translation{background:#f4f0ff;padding:12px;border-radius:8px;margin:12px 0}
+.passage{background:#f8fbfd;border:1px solid #dceaf0;padding:14px;border-radius:10px}
+.word{white-space:nowrap}.sound{border:0;background:#e0f5fb;border-radius:7px;padding:5px 8px;cursor:pointer;margin-left:5px}
+select{padding:8px;border:1px solid #b9d2dc;border-radius:8px;max-width:100%;font-size:15px}
+.score{font-weight:700;font-size:18px;color:#087ea4}.muted{color:#5d7180;font-size:14px}
+#passwordGate[hidden]{display:none!important}#passwordGate{position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#e8f7fc,#f7fbff);display:flex;align-items:center;justify-content:center;padding:20px}#passwordGate .gate-card{width:min(420px,100%);background:#fff;padding:28px;border-radius:18px;box-shadow:0 12px 40px #17324d22;text-align:center}#passwordGate h2{margin:0 0 8px}#passwordGate input{width:100%;padding:12px;border:1px solid #b9d2dc;border-radius:9px;font-size:18px;margin:12px 0}#passwordGate .gate-error{color:#c0392b;min-height:24px;font-weight:700}body.locked{overflow:hidden}.reading-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start;margin-top:12px}.reading-pane,.questions-pane{min-width:0;background:#fff;border:1px solid #d8e7ed;border-radius:12px;padding:14px}.reading-pane h3,.questions-pane h3{margin:0 0 10px;color:#087ea4}.questions-pane .q{margin:10px 0}.answered-locked{background:#f8fbfd}.answered-locked input[type=radio]{cursor:not-allowed}.answered-locked label{opacity:.78}@media(max-width:700px){.reading-grid{grid-template-columns:1fr}.reading-pane,.questions-pane{padding:11px}}
+@media(max-width:600px){main{padding:10px}.panel{padding:13px}.q{padding:10px}nav button{flex:1 1 42%}}
+</style>
+</head>
+<body class="locked">
+<div id="passwordGate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+  <div class="gate-card">
+    <h2 id="gateTitle">Enter password</h2>
+    <p>Please enter the password to access the exercises.</p>
+    <form id="passwordForm" onsubmit="return unlockExercises(event)">
+      <input id="passwordInput" type="password" inputmode="numeric" autocomplete="off" placeholder="Password" aria-label="Password" onkeydown="if(event.key==='Enter'){event.preventDefault();unlockExercises(event)}" required>
+      <button class="btn" type="button" onclick="unlockExercises(event)" style="width:100%">Unlock exercises</button>
+    </form>
+    <div id="passwordError" class="gate-error" aria-live="polite"></div>
+  </div>
+</div>
+<script>
+function unlockExercises(event){
+  if(event && event.preventDefault) event.preventDefault();
+  var input=document.getElementById('passwordInput');
+  var gate=document.getElementById('passwordGate');
+  var error=document.getElementById('passwordError');
+  if(input && input.value.trim()==='367'){
+    gate.hidden=true;
+    gate.style.display='none';
+    document.body.classList.remove('locked');
+    var app=document.getElementById('app');
+    if(app) app.removeAttribute('aria-hidden');
+    if(error) error.textContent='';
+    return false;
+  }
+  if(error) error.textContent='Sai mật khẩu. Vui lòng nhập lại.';
+  if(input){input.value='';input.focus();}
+  return false;
+}
+</script>
+<header><h1>Music and Arts – Interactive Practice</h1><p>Choose your answers, check your work, and read the explanations.</p></header>
+<main>
+<nav id="nav"></nav>
+<div class="panel"><div class="score" id="totalScore">Score: not checked yet</div><p class="muted">Each exercise has its own score. You can change your answers and check again.</p></div>
+<div id="app"></div>
+</main>
+<script>
+(function(){
+ const gate=document.getElementById('passwordGate');
+ const form=document.getElementById('passwordForm');
+ const input=document.getElementById('passwordInput');
+ const error=document.getElementById('passwordError');
+ function unlock(){
+   if(String(input.value).trim()==='367'){
+     gate.hidden=true;
+     gate.style.display='none';
+     document.body.classList.remove('locked');
+     document.getElementById('app').removeAttribute('aria-hidden');
+     error.textContent='';
+   }else{
+     error.textContent='Sai mật khẩu. Vui lòng nhập lại.';
+     input.value='';
+     input.focus();
+   }
+ }
+ form.addEventListener('submit',function(e){e.preventDefault();unlock();});
+ // Fallback for browsers that do not dispatch submit as expected.
+ input.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();unlock();}});
+ document.getElementById('app').setAttribute('aria-hidden','true');
+ input.focus();
+})();
+const exercises = [
+{title:"1. Pronunciation",type:"mc",qs:[
+["Which word has a different underlined sound?","sunburnt;sculpture;service;sugar".split(";"),3,"The underlined letter(s) are pronounced differently in “sugar” (/ʃ/) from the /s/ sound in the other words."],
+["Which word has a different underlined sound?","measure;pleasure;conclusion;pension".split(";"),3,"The “s” in pension is pronounced /ʃ/, unlike the /ʒ/ sound in measure, pleasure and conclusion."],
+["Which word has a different underlined sound?","delicious;special;concentrate;musician".split(";"),2,"The underlined sound in concentrate is /k/, while the other target sounds are /ʃ/ or /ʒ/."],
+["Which word has a different underlined sound?","usually;composer;leisure;version".split(";"),1,"Composer has /z/ for the underlined s, while the others have a /ʒ/ sound."],
+["Which word has a different underlined sound?","prefer;perform;painter;concert".split(";"),0,"The underlined “e” in prefer has a different sound from the target vowel in the other options."]
+], underline:[["s","sc","s","s"],["s","s","s","s"],["ci","ci","c","ci"],["s","s","s","s"],["er","er","er","er"]]},
+{title:"2. Fill in each gap with a word or phrase from the box",type:"mc",qs:[
+["I’ve heard that the ______ in Pho Duc Chinh Street, Ho Chi Minh City is a very interesting one.",["musical instruments","prefer","artistic","art museum","folk music","rock music"],3,"“Art museum” is a place where works of art are displayed."],
+["Many teenagers prefer ______ because it is lively and exciting.",["musical instruments","prefer","artistic","art museum","folk music","rock music"],5,"Rock music is often lively and exciting."],
+["Do you like ______? – Yes! It’s traditional and emotional.",["musical instruments","prefer","artistic","art museum","folk music","rock music"],4,"Folk music is traditional music associated with a community."],
+["Which do you ______: watching pop music in person or live on TV?",["musical instruments","prefer","artistic","art museum","folk music","rock music"],1,"“Which do you prefer?” asks someone to choose between options."],
+["Traditional ______ of Viet Nam include the flute, the monochord (Dan Bau), the Trung, drums, and others.",["musical instruments","prefer","artistic","art museum","folk music","rock music"],0,"“Musical instruments” names the flute, monochord, drums, and similar objects."],
+["I’m not as ______ as my brother. He plays the guitar very well.",["musical instruments","prefer","artistic","art museum","folk music","rock music"],2,"“As + adjective + as” compares qualities; artistic means having skill or interest in art."]
+]},
+{title:"3. Match the famous people with their occupations",type:"mc",qs:[
+["Nguyen Du",["painter","singer","actor","poet","composer"],3,"Nguyen Du is famous as a Vietnamese poet."],
+["Bui Xuan Phai",["painter","singer","actor","poet","composer"],0,"Bui Xuan Phai was a Vietnamese painter."],
+["Thanh Hoa",["painter","singer","actor","poet","composer"],1,"Thanh Hoa is a Vietnamese singer."],
+["Pham Tuyen",["painter","singer","actor","poet","composer"],4,"Pham Tuyen is a Vietnamese composer."],
+["Tom Cruise",["painter","singer","actor","poet","composer"],2,"Tom Cruise is an actor."]
+]},
+{title:"4. Choose the correct answer",type:"mc",qs:[
+["My uncle’s house is full of interesting pieces of art. It’s ____ a museum.",["similar","like","as","than"],1,"“Like” means “similar to” in this sentence."],
+["This film is not ____ the original story.",["as interesting as","as interesting than","more interesting like","as interesting like"],0,"The comparison pattern is “as + adjective + as”."],
+["The audience ____ wildly when the band appeared on stage.",["smiled","sounded","applauded","cried"],2,"“Applauded” means clapped to show approval."],
+["To ____ successfully, they have to practise the play many times.",["perform","play","sing","dance"],0,"Actors perform a play; practising helps them perform successfully."],
+["Turn the TV off. The show is ____.",["exciting","peaceful","tiring","boring"],3,"“Boring” explains why someone wants the TV turned off."],
+["Mozart was one of the most famous ____ of classical music.",["actors","composers","artists","makers"],1,"Mozart composed music, so he was a composer."],
+["Did you enjoy the play? – Yes. It was ____ from the previous version.",["like","similar","different","same"],2,"The phrase is “different from”."],
+["Because I was sitting in the back row of the theatre, I couldn’t see the ____.",["painters","musicians","composers","writers"],1,"The context refers to the musicians in the theatre."]
+]},
+{title:"5. Complete each sentence with a word",type:"mc",qs:[
+["The leading ____ had to change her costume more than 10 times during the play.",["actress","musician","gallery","band"],0,"An actress is a female performer in a play or film."],
+["My sister’s personality is very different ____ mine.",["than","from","as","like"],1,"The correct expression is “different from”."],
+["Do you know who ____ The Last Supper? – Yes. It’s Leonardo da Vinci.",["painted","sang","performed","composed"],0,"We use “painted” for creating a painting."],
+["Her ____ talent showed itself at an early age in her drawings of animals.",["artistic","musical","dramatic","natural"],0,"“Artistic talent” is the ability to create or appreciate art."],
+["The children assembled on stage to ____ the national anthem.",["sing","paint","compose","draw"],0,"People sing a national anthem."],
+["What musical ____ do you like best? – The Beatles.",["instrument","band","gallery","artist"],1,"The Beatles are a band."],
+["Paintings and drawings are not the same things. They are quite ____.",["similar","different","same","alike"],1,"“Different” means not the same."],
+["A ____ is a room or building used for showing works of art.",["gallery","band","stage","museum-goer"],0,"A gallery is a place where works of art are displayed."]
+]},
+{title:"6. Fill in each blank with one suitable word",type:"mc",qs:[
+["My sister likes to watch Mickey Mouse, Donald Duck, and other ____.",["cartoons","films","musicians","instruments"],0,"Mickey Mouse and Donald Duck are cartoon characters."],
+["I like science fiction, but I never watch thriller or horror ____.",["cartoons","films","music","songs"],1,"Science fiction, thrillers and horror are types of films."],
+["Michael Jackson, Bob Dylan, and Britney Spears are among the ____ I like best.",["musicians","films","instruments","galleries"],0,"These people are musicians or singers."],
+["Old people generally enjoy traditional, classical, or country ____.",["music","films","cartoons","instruments"],0,"Traditional, classical and country are types of music."],
+["Chris is a very good pianist and can also play a number of other musical ____.",["songs","bands","instruments","artists"],2,"A pianist can play other musical instruments."]
+]},
+{title:"7. Write complete sentences from the cues",type:"text",qs:[
+["painting / he / recently / painted / very much / like / old one.","The painting he recently painted is very much like the old one.","“The painting (that) he recently painted” is a noun phrase with a defining relative clause; “like” means similar to."],
+["performance / she / give / last night / not like / other performances.","The performance she gave last night was not like her other performances.","Use past tense “gave” and “was not like” to compare past performances."],
+["Each / my three sisters / be / very different / the others.","Each of my three sisters is very different from the others.","“Each” takes a singular verb: “is”; the phrase is “different from”."],
+["I / like / music / art / as / much / other subjects / school.","I like music and art as much as other subjects at school.","Use “as much as” to show equal degree of liking."],
+["Photography / painting / can / relaxing / as / listening / music.","Photography and painting can be as relaxing as listening to music.","The pattern is “as + adjective + as”."],
+["artists / like / Van Gogh / use / bold colours / their paintings / arouse / strong emotions.","Some artists like Van Gogh used bold colours in their paintings to arouse strong emotions.","Use “used” for the past and “to arouse” to show purpose."]
+]},
+{title:"8. Read and complete the passage",type:"mc",passage:"I’m sure that you have heard the name Trinh Cong Son many times. He was one of the most famous 1) ______ and songwriters of Viet Nam in the 20th century. He was born in 1939 in Dak Lak Province. As a child he grew up in Hue. Later he went to Sai Gon to study. He began to write songs and became well-known in 1958. He continued to 2) ______ music all his life. He wrote about 600 songs in all. Among his best songs are Noi vong tay lon (Circle of Unity), Ha trang (White Summer) and Cat Bui (Dust). His 3) ______ are mostly about love, human condition, and nature. He died in Ho Chi Minh City in 2001. His songs remain 4) ______ among the Vietnamese all over the world today. Many have been translated into English, French, Japanese, and other 5) ______.",type:"mc",qs:[
+["Blank 1",["musicians","compose","songs","popular","languages"],0,"“Musicians and songwriters” are people who create music."],
+["Blank 2",["musicians","compose","songs","popular","languages"],1,"After “to”, use the base verb “compose”."],
+["Blank 3",["musicians","compose","songs","popular","languages"],2,"Songs are about love, the human condition and nature."],
+["Blank 4",["musicians","compose","songs","popular","languages"],3,"“Remain popular” means continue to be liked."],
+["Blank 5",["musicians","compose","songs","popular","languages"],4,"English, French and Japanese are languages."]
+]},
+{title:"9. Read Lan’s letter and choose the correct answer",type:"mc",passage:"Dear Clara,\n\nI hope you are doing well! I am writing to tell you about my music and art classes at school.\n\nIn music classes, we listen to everything from (1) ______ Vietnamese songs to modern pop. We often sing together as a group, which is a lot of fun. I have also started learning how to play the piano. It is a bit difficult, but practising every day is (2) ______ listening to my favourite songs. I hope that I’ll be able to perform my favourite (3) ______ on the piano very soon!\n\nOur art classes are also very exciting. We use many things (4) ______ watercolours, pastels, and clay. Last week, we painted beautiful scenes from nature. It was great to see everyone’s (5) ______ ideas. We also learn about famous artists and their styles.\n\nI love these classes because I can (6) ______ myself freely. Does your school have music and art classes? Please tell me about them!\n\nBest wishes,\nLan",type:"mc",qs:[
+["Blank 1",["typical","different","traditional","past"],2,"“Traditional Vietnamese songs” is the natural phrase here."],
+["Blank 2",["as enjoyable like","as enjoyable as","as enjoyable","enjoyable"],1,"Use “as + adjective + as” to compare two activities."],
+["Blank 3",["music","lyric","play","song"],3,"A song is something you can perform on the piano."],
+["Blank 4",["similar","like","such","same"],1,"“Things like watercolours, pastels, and clay” introduces examples."],
+["Blank 5",["creative","strange","simple","difficult"],0,"“Creative ideas” means imaginative ideas."],
+["Blank 6",["exhibit","showcase","grow","express"],3,"“Express myself” means communicate feelings or ideas."]
+]},
+{title:"10. Reading comprehension: Charlie Chaplin",type:"mc",passage:"Charlie Chaplin was an English actor, director, producer, and composer. He is known as the greatest comic artist of the screen and one of the most important figures in motion-picture history.\n\nChaplin was born in London in 1889. He learned to perform onstage and became a professional entertainer at eight as a clog dancer. In 1908 he joined the Fred Karno Pantomime Troupe and quickly became well-known. In 1910 he began to perform pantomime in the United States. He first appeared on screen in 1914. He created his world-famous character, the Tramp, and he played this classic role in more than 70 films during his career. He also composed background music for most of his films. In 1972 Chaplin received an Honorary Academy Award for “making motion pictures the art form of this century”. Chaplin died in 1977 at his home in Switzerland.",translation:"Charlie Chaplin là diễn viên, đạo diễn, nhà sản xuất và nhà soạn nhạc người Anh. Ông được biết đến là nghệ sĩ hài xuất sắc nhất trên màn ảnh và là một trong những nhân vật quan trọng nhất trong lịch sử điện ảnh.\n\nChaplin sinh ra ở London năm 1889. Ông học biểu diễn trên sân khấu và trở thành nghệ sĩ giải trí chuyên nghiệp ở tuổi lên tám với vai trò vũ công clog. Năm 1908, ông gia nhập đoàn kịch câm Fred Karno và nhanh chóng trở nên nổi tiếng. Năm 1910, ông bắt đầu biểu diễn kịch câm tại Hoa Kỳ. Ông xuất hiện trên màn ảnh lần đầu vào năm 1914. Ông tạo ra nhân vật nổi tiếng toàn cầu là The Tramp và đóng vai này trong hơn 70 bộ phim trong sự nghiệp. Ông cũng sáng tác nhạc nền cho hầu hết các bộ phim của mình. Năm 1972, Chaplin nhận Giải thưởng Danh dự của Viện Hàn lâm vì đã biến điện ảnh thành một loại hình nghệ thuật của thế kỷ. Ông qua đời năm 1977 tại nhà riêng ở Thụy Sĩ.",qs:[
+["At eight, Chaplin became a professional entertainer as a ____.",["dancer","actor","composer"],0,"The passage says he became a professional entertainer at eight as a clog dancer."],
+["When did he start appearing in films?",["In 1910","In 1914","In 1972"],1,"The passage states that he first appeared on screen in 1914."],
+["In about how many films did he play the Tramp?",["Seventy","Seventeen","Twenty-five"],0,"He played the Tramp in more than 70 films; “seventy” is the closest answer."],
+["Charlie Chaplin is very famous for ____.",["his short plays","his background music","his character the Tramp"],2,"The passage highlights his world-famous character, the Tramp."],
+["Which of the following is NOT true?",["Charlie Chaplin was an English artist.","He played classical music.","He received an award in 1972."],1,"The passage says he composed background music, not that he played classical music."]
+]},
+{title:"11. Rewrite the sentences",type:"text",qs:[
+["Her picture is not like mine.\nHer picture is ______.", "different from mine / not the same as mine","“Different from” and “not the same as” both express that two things are unlike."],
+["Khanh is a better painter than Giang.\nGiang can’t ______.", "paint as well as Khanh","Use “can’t + verb + as well as” to express a lower level of ability."],
+["I much prefer country life to city life.\nI think living in the country is ______.", "better than living in the city","“Prefer A to B” can be rewritten as “think A is better than B”."],
+["Her picture is not the same as her brother’s.\nHer picture is ______.", "different from / not like her brother’s","“Not the same as” means “different from”."],
+["This year’s performance is not very good. Last year’s was better.\nThis year’s performance is not ______.", "as good as last year’s","Use “not as + adjective + as” for an unequal comparison."]
+]}
+];
+const vnSupport = [
+[
+['Chọn từ có phần gạch chân phát âm khác.','“Sunburnt”, “sculpture” và “service” có âm /s/ ở phần được xét; “sugar” bắt đầu bằng âm /ʃ/ (giống “sh”).'],
+['Chọn từ có phần gạch chân phát âm khác.','Trong “pension”, chữ “s” được phát âm /ʃ/; các từ còn lại có âm /ʒ/ ở phần tương ứng.'],
+['Chọn từ có phần gạch chân phát âm khác.','Ở “concentrate”, chữ “c” được phát âm /k/. Hãy so sánh đúng phần chữ được gạch chân trong đề.'],
+['Chọn từ có phần gạch chân phát âm khác.','“Composer” có âm /z/ ở chữ “s”; những từ còn lại có cách phát âm khác ở phần được xét.'],
+['Chọn từ có phần gạch chân phát âm khác.','Đối chiếu nguyên âm ở phần gạch chân: “prefer” có cách phát âm khác với các lựa chọn còn lại theo dạng bài này.']
+],
+[
+['Tôi nghe nói bảo tàng nghệ thuật trên đường Phó Đức Chính, Thành phố Hồ Chí Minh rất thú vị.','“Art museum” nghĩa là “bảo tàng nghệ thuật”, phù hợp với nơi trưng bày các tác phẩm nghệ thuật.'],
+['Nhiều thanh thiếu niên thích nhạc rock hơn vì thể loại này sôi động và thú vị.','“Rock music” là nhạc rock; “lively and exciting” nghĩa là sôi động và thú vị.'],
+['Bạn có thích nhạc dân gian không? – Có! Nhạc dân gian truyền thống và giàu cảm xúc.','“Folk music” là nhạc dân gian. Cụm “traditional and emotional” mô tả đặc điểm của loại nhạc này.'],
+['Bạn thích lựa chọn nào hơn: xem nhạc pop trực tiếp hay xem trực tiếp trên TV?','Cấu trúc câu hỏi lựa chọn là “Which do you prefer…?” – “Bạn thích … hơn?”. Sau “do you” dùng động từ nguyên mẫu “prefer”.'],
+['Các nhạc cụ truyền thống của Việt Nam bao gồm sáo, đàn bầu, đàn trưng, trống và những nhạc cụ khác.','“Musical instruments” nghĩa là “nhạc cụ”; sáo, đàn bầu và trống đều là nhạc cụ.'],
+['Tôi không có năng khiếu nghệ thuật bằng anh trai tôi. Anh ấy chơi ghi-ta rất giỏi.','Cấu trúc “not as + tính từ + as” diễn tả không … bằng. “Artistic” nghĩa là có năng khiếu hoặc thiên hướng nghệ thuật.']
+],
+[
+['Nguyễn Du – nhà thơ.','Nguyễn Du là đại thi hào Việt Nam, vì vậy nghề nghiệp tương ứng là “poet” (nhà thơ).'],
+['Bùi Xuân Phái – họa sĩ.','Bùi Xuân Phái nổi tiếng với tư cách họa sĩ; “painter” nghĩa là họa sĩ.'],
+['Thanh Hoa – ca sĩ.','“Singer” nghĩa là ca sĩ, người hát chuyên nghiệp.'],
+['Phạm Tuyên – nhà soạn nhạc.','“Composer” nghĩa là nhà soạn nhạc, người sáng tác nhạc.'],
+['Tom Cruise – diễn viên.','“Actor” nghĩa là diễn viên; Tom Cruise là diễn viên điện ảnh.']
+],
+[
+['Nhà của chú tôi có nhiều tác phẩm nghệ thuật thú vị. Nó giống như một bảo tàng.','“Like” ở đây có nghĩa là “giống như”. Không dùng “as” đơn lẻ để diễn đạt ý này.'],
+['Bộ phim này không thú vị bằng câu chuyện gốc.','So sánh ngang bằng dùng “as + tính từ + as”. Dạng phủ định “not as interesting as” có nghĩa là “không thú vị bằng”.'],
+['Khán giả vỗ tay nhiệt liệt khi ban nhạc xuất hiện trên sân khấu.','“Applauded” là quá khứ của “applaud”, nghĩa là vỗ tay tán thưởng. “Audience” là khán giả.'],
+['Để biểu diễn thành công, họ phải luyện tập vở kịch nhiều lần.','“Perform” nghĩa là biểu diễn. Sau “to” chỉ mục đích, dùng động từ nguyên mẫu: “to perform”.'],
+['Hãy tắt TV đi. Chương trình thật nhàm chán.','“Boring” nghĩa là gây nhàm chán; “bored” thường diễn tả cảm giác của người xem.'],
+['Mozart là một trong những nhà soạn nhạc nổi tiếng nhất của nhạc cổ điển.','Cấu trúc “one of the most + tính từ + danh từ số nhiều” cần danh từ số nhiều “composers”. Mozart là nhà soạn nhạc.'],
+['Bạn có thích vở kịch không? – Có. Nó khác với phiên bản trước.','Cụm đúng là “different from” (khác với). “Same” thường đi với “the same as”.'],
+['Vì ngồi ở hàng ghế cuối nhà hát nên tôi không thể nhìn thấy các nhạc công.','“Musicians” là nhạc công/nhạc sĩ biểu diễn. “Couldn’t see” nghĩa là không thể nhìn thấy.']
+],
+[
+['Nữ diễn viên chính phải thay trang phục hơn 10 lần trong suốt vở kịch.','“Leading actress” là nữ diễn viên chính. “Had to” diễn tả sự cần thiết trong quá khứ.'],
+['Tính cách của chị/em gái tôi rất khác với tính cách của tôi.','Cụm cố định trong bài là “different from”, nghĩa là khác với.'],
+['Bạn có biết ai đã vẽ bức “The Last Supper” không? – Có. Đó là Leonardo da Vinci.','Dùng “paint” với tranh; vì hành động xảy ra trong quá khứ nên dùng quá khứ “painted”.'],
+['Năng khiếu nghệ thuật của cô ấy bộc lộ từ khi còn nhỏ qua những bức vẽ động vật tuyệt đẹp.','“Artistic talent” nghĩa là năng khiếu nghệ thuật; “at an early age” nghĩa là từ khi còn nhỏ.'],
+['Bọn trẻ tập trung trên sân khấu để hát quốc ca.','“Sing the national anthem” nghĩa là hát quốc ca. Sau “to” chỉ mục đích dùng động từ nguyên mẫu.'],
+['Bạn thích ban nhạc nào nhất? – The Beatles.','The Beatles là một ban nhạc, nên dùng “band”, không phải nhạc cụ hay phòng trưng bày.'],
+['Tranh vẽ và tranh hội họa không phải là cùng một thứ. Chúng khá khác nhau.','“Different” nghĩa là khác nhau; “the same” nghĩa là giống nhau.'],
+['Phòng trưng bày là căn phòng hoặc tòa nhà dùng để trưng bày các tác phẩm nghệ thuật.','“Gallery” là phòng/nhà trưng bày nghệ thuật.']
+],
+[
+['Chị/em gái tôi thích xem chuột Mickey, vịt Donald và các phim hoạt hình khác.','Mickey Mouse và Donald Duck là nhân vật hoạt hình; “cartoons” nghĩa là phim hoạt hình.'],
+['Tôi thích phim khoa học viễn tưởng, nhưng tôi không bao giờ xem phim giật gân hoặc kinh dị.','Science fiction, thriller và horror là các thể loại phim; danh từ phù hợp là “films”.'],
+['Michael Jackson, Bob Dylan và Britney Spears là những nhạc sĩ/ca sĩ mà tôi thích nhất.','Những người được kể tên là nghệ sĩ âm nhạc; “musicians” có nghĩa là nhạc sĩ/nhạc công và có thể bao gồm ca sĩ.'],
+['Người lớn tuổi thường thích nhạc truyền thống, nhạc cổ điển hoặc nhạc đồng quê.','Traditional, classical và country đều bổ nghĩa cho “music” (âm nhạc), là danh từ không đếm được trong cách dùng này.'],
+['Chris là một nghệ sĩ dương cầm rất giỏi và cũng có thể chơi một số nhạc cụ khác.','“Pianist” là người chơi đàn piano; “musical instruments” nghĩa là nhạc cụ.']
+],
+[
+['Bức tranh mà anh ấy mới vẽ rất giống bức tranh cũ.','“The painting (that) he recently painted” là cụm danh từ có mệnh đề quan hệ; “very much like” nghĩa là rất giống.'],
+['Màn trình diễn cô ấy thực hiện tối qua không giống những màn trình diễn khác của cô ấy.','Dùng “gave” (quá khứ của give) và “was not like” để nói về một màn trình diễn trong quá khứ.'],
+['Mỗi người trong ba chị em gái của tôi đều rất khác với những người còn lại.','“Each” đi với động từ số ít “is”. Cụm so sánh là “different from the others”.'],
+['Tôi yêu thích âm nhạc và mỹ thuật nhiều như các môn học khác ở trường.','“As much as” diễn tả mức độ ngang bằng: thích âm nhạc và mỹ thuật cũng nhiều như các môn khác.'],
+['Nhiếp ảnh và hội họa có thể thư giãn như việc nghe nhạc.','Cấu trúc “as + adjective + as” diễn tả mức độ ngang bằng; “relaxing” nghĩa là giúp thư giãn.'],
+['Một số nghệ sĩ như Van Gogh đã sử dụng màu sắc đậm trong tranh để khơi gợi cảm xúc mạnh mẽ.','“Used” là quá khứ của “use”; “to arouse strong emotions” nghĩa là để khơi gợi cảm xúc mạnh.']
+],
+[
+['Ông là một trong những nhạc sĩ và người viết ca khúc nổi tiếng nhất Việt Nam trong thế kỷ 20.','“Musicians and songwriters” chỉ những người làm âm nhạc; câu cần danh từ chỉ người ở chỗ trống số 1.'],
+['Ông tiếp tục sáng tác nhạc trong suốt cuộc đời mình.','Sau “continued to” dùng động từ nguyên mẫu “compose” (sáng tác).'],
+['Các ca khúc của ông chủ yếu nói về tình yêu, thân phận con người và thiên nhiên.','“His songs” là chủ ngữ số nhiều, phù hợp với nội dung được nói đến sau đó.'],
+['Các ca khúc của ông vẫn được người Việt trên khắp thế giới yêu thích cho đến ngày nay.','“Remain popular” nghĩa là vẫn phổ biến/được yêu thích.'],
+['Nhiều ca khúc đã được dịch sang tiếng Anh, tiếng Pháp, tiếng Nhật và các ngôn ngữ khác.','English, French và Japanese là tên ngôn ngữ; do đó từ cần điền là “languages”.']
+],
+[
+['Trong giờ âm nhạc, chúng tôi nghe đủ loại nhạc, từ những bài hát Việt Nam truyền thống đến nhạc pop hiện đại.','“Traditional Vietnamese songs” nghĩa là các bài hát Việt Nam truyền thống; đây là cụm từ tự nhiên theo ngữ cảnh.'],
+['Việc luyện tập mỗi ngày thú vị như nghe những bài hát yêu thích của tôi.','So sánh ngang bằng dùng “as + adjective + as”: “as enjoyable as”.'],
+['Tôi hy vọng sẽ sớm có thể biểu diễn bài hát yêu thích của mình trên đàn piano.','“Perform a song” nghĩa là biểu diễn một bài hát; “song” là đáp án phù hợp với ý nghĩa.'],
+['Chúng tôi sử dụng nhiều thứ như màu nước, phấn màu và đất sét.','“Like” có nghĩa là “chẳng hạn như”, dùng để đưa ra ví dụ.'],
+['Thật tuyệt khi thấy những ý tưởng sáng tạo của mọi người.','“Creative ideas” nghĩa là những ý tưởng sáng tạo; “creative” mô tả khả năng tạo ra ý tưởng mới.'],
+['Tôi yêu thích những lớp học này vì tôi có thể tự do thể hiện bản thân.','“Express myself” nghĩa là thể hiện bản thân, cảm xúc hoặc ý tưởng của mình.']
+],
+[
+['Khi lên tám tuổi, Chaplin trở thành nghệ sĩ giải trí chuyên nghiệp với vai trò vũ công clog.','Đoạn văn nói rõ ông trở thành nghệ sĩ giải trí ở tuổi tám với vai trò “clog dancer” (vũ công clog).'],
+['Ông bắt đầu xuất hiện trên màn ảnh vào năm 1914.','Thông tin nằm ở câu “He first appeared on screen in 1914.”'],
+['Ông đóng vai The Tramp trong hơn 70 bộ phim.','Đoạn văn ghi “more than 70 films”; trong các lựa chọn, “Seventy” là đáp án gần đúng nhất.'],
+['Charlie Chaplin rất nổi tiếng nhờ nhân vật The Tramp của mình.','Bài đọc nhấn mạnh nhân vật nổi tiếng toàn cầu do ông tạo ra là The Tramp.'],
+['Phát biểu nào sau đây KHÔNG đúng?','Bài đọc nói ông sáng tác nhạc nền cho hầu hết phim, không nói rằng ông chơi nhạc cổ điển. Vì vậy lựa chọn B là phát biểu không được bài đọc xác nhận.']
+],
+[
+['Bức tranh của cô ấy khác với bức tranh của tôi.','“Different from mine” và “not the same as mine” đều có nghĩa là khác với của tôi.'],
+['Giang không thể vẽ đẹp bằng Khanh.','“Can’t paint as well as” nghĩa là không thể vẽ giỏi/đẹp bằng. “As well as” so sánh khả năng thực hiện hành động.'],
+['Tôi nghĩ sống ở nông thôn tốt hơn sống ở thành phố.','“Prefer country life to city life” có thể diễn đạt lại bằng “living in the country is better than living in the city”.'],
+['Bức tranh của cô ấy khác với bức tranh của anh trai cô ấy.','“Not the same as” có thể viết lại thành “different from” hoặc “not like”.'],
+['Màn trình diễn năm nay không tốt bằng màn trình diễn năm ngoái.','Dùng “not as good as” để diễn tả không tốt bằng; “last year’s” thay cho “last year’s performance”.']
+]
+];
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function speak(text){
+  try {
+    if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
+      alert('Trình duyệt này không hỗ trợ đọc văn bản. Hãy mở file bằng Chrome hoặc Edge và kiểm tra âm lượng.'); return;
+    }
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(String(text));
+    utterance.lang = 'en-GB'; utterance.rate = 0.82; utterance.pitch = 1;
+    const voices = window.speechSynthesis.getVoices();
+    const british = voices.find(v => /^en-GB$/i.test(v.lang)) || voices.find(v => /^en-.*GB/i.test(v.lang));
+    if (british) utterance.voice = british;
+    utterance.onerror = () => { /* Browser/OS may not provide a speech voice. */ };
+    window.speechSynthesis.speak(utterance);
+  } catch (e) { alert('Không thể phát âm thanh. Hãy mở bằng Chrome/Edge và kiểm tra cài đặt âm thanh.'); }
+}
+if ('speechSynthesis' in window) { window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices(); }
+function wordMarkup(word,ex,i,j){let under=ex.underline?.[i]?.[j]; if(!under)return esc(word);let pos=word.toLowerCase().indexOf(under.toLowerCase());if(pos<0)return esc(word);return esc(word.slice(0,pos))+'<u>'+esc(word.slice(pos,pos+under.length))+'</u>'+esc(word.slice(pos+under.length))}
+function render(){let nav=document.getElementById('nav'),app=document.getElementById('app');nav.innerHTML='';app.innerHTML='';
+exercises.forEach((ex,ei)=>{let b=document.createElement('button');b.textContent=ex.title.split('.')[0];b.onclick=()=>document.getElementById('ex'+ei).scrollIntoView({behavior:'smooth'});nav.appendChild(b);
+let section=document.createElement('section');section.className='panel';section.id='ex'+ei;section.innerHTML='<h2>'+esc(ex.title)+'</h2>';
+let questionTarget=section;
+if(ex.passage){section.innerHTML+='<div class="reading-grid"><div class="reading-pane"><h3>Reading passage</h3><div class="passage">'+esc(ex.passage).replace(/\n/g,'<br>')+'</div>'+(ex.translation?'<details class="translation"><summary><b>Bản dịch tiếng Việt</b></summary>'+esc(ex.translation).replace(/\n/g,'<br>')+'</details>':'')+'</div><div class="questions-pane"><h3>Questions</h3></div></div>';questionTarget=section.querySelector('.questions-pane');}
+else if(ex.translation)section.innerHTML+='<details class="translation"><summary><b>Vietnamese translation (click to show/hide)</b></summary>'+esc(ex.translation).replace(/\n/g,'<br>')+'</details>';
+ex.qs.forEach((q,qi)=>{let box=document.createElement('div');box.className='q';let prompt=q[0];if(ei===0){box.innerHTML='<b>'+(qi+1)+'. '+esc(prompt)+'</b><div class="options" style="display:block">'+q[1].map((w,j)=>'<label style="display:flex;margin:6px 0"><input type="radio" name="e'+ei+'q'+qi+'" value="'+j+'"> <span>'+String.fromCharCode(65+j)+'. '+wordMarkup(w,ex,qi,j)+'</span></label>').join('')+'</div>';q[1].forEach((w,j)=>{let row=box.querySelectorAll('label')[j];let audio=document.createElement('button');audio.type='button';audio.className='sound';audio.textContent='🔊';audio.setAttribute('aria-label','Listen to '+w);audio.addEventListener('click',()=>speak(w));row.appendChild(audio)})}
+else if(ex.type==='text'){box.innerHTML='<b>'+(qi+1)+'. '+esc(prompt).replace(/\n/g,'<br>')+'</b><p><input class="typed" aria-label="Your answer" style="width:100%;padding:10px;border:1px solid #b9d2dc;border-radius:8px" placeholder="Type your answer"></p><button type="button" class="btn check-one" style="margin:4px 0">Check this answer</button><div class="single-score muted"></div>'}
+else {box.innerHTML='<b>'+(qi+1)+'. '+esc(prompt).replace(/\n/g,'<br>')+'</b><div class="options">'+q[1].map((opt,j)=>'<label><input type="radio" name="e'+ei+'q'+qi+'" value="'+j+'"> '+String.fromCharCode(65+j)+'. '+esc(opt)+'</label>').join('')+'</div>'}
+box.innerHTML+='<div class="feedback"></div><div class="explain"></div>'; questionTarget.appendChild(box); box.querySelectorAll('input[type=radio]').forEach(inp=>inp.addEventListener('change',()=>{if(inp.checked){box.querySelectorAll('input[type=radio]').forEach(r=>{r.disabled=true;});box.classList.add('answered-locked');checkExercise(ei,section,true);}})); if(ex.type==='text'){box.querySelector('.check-one').addEventListener('click',()=>checkSingleQuestion(ei,section,qi)); box.querySelector('.typed').addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();checkSingleQuestion(ei,section,qi)}});}});let check=document.createElement('button');check.className='btn';check.textContent=ex.type==='text'?'Check all answers':'Check answers';check.onclick=()=>checkExercise(ei,section);section.appendChild(check);let score=document.createElement('div');score.className='score';score.style.marginTop='10px';score.textContent='Score: not checked yet';section.appendChild(score);app.appendChild(section)});
+}
+function norm(s){return s.toLowerCase().trim().replace(/[’']/g,"'").replace(/[.!?]+$/,'').replace(/\s+/g,' ')}
+function checkSingleQuestion(ei,section,qi){
+let ex=exercises[ei],box=section.querySelectorAll('.q')[qi],q=ex.qs[qi],user=box.querySelector('.typed').value.trim();
+let fb=box.querySelector('.feedback'),explain=box.querySelector('.explain'),mini=box.querySelector('.single-score');
+if(!user){fb.className='feedback wrong';fb.textContent='Hãy nhập câu trả lời trước khi chấm.';explain.style.display='none';mini.textContent='Chưa chấm';return;}
+let answer=q[1],acceptable=answer.split('/').map(x=>norm(x)),ok=acceptable.some(a=>norm(user)===a);
+if(ei===6)ok=norm(user)===norm(answer);
+fb.className='feedback '+(ok?'correct':'wrong');
+fb.textContent=ok?'Đúng rồi! ✓':'Chưa chính xác. Đáp án gợi ý: '+answer;
+let extra=vnSupport[ei]?.[qi]||['Nghĩa tiếng Việt: '+q[0],'Hãy chú ý trật tự từ, thì của động từ và cấu trúc so sánh trong câu.'];
+explain.style.display='block';
+explain.innerHTML='<b>Dịch nghĩa:</b> '+esc(extra[0])+'<br><br><b>Giải thích:</b> '+esc(extra[1])+'<br><br><b>Đáp án gợi ý:</b> '+esc(answer);
+mini.textContent=ok?'Kết quả câu này: 1/1':'Kết quả câu này: 0/1';
+/* Update the exercise score using only text answers that have been individually checked or entered. */
+let boxes=[...section.querySelectorAll('.q')],correct=0,answered=0;
+boxes.forEach((b,i)=>{let val=b.querySelector('.typed')?.value.trim();if(!val)return;answered++;let a=ex.qs[i][1],acc=a.split('/').map(x=>norm(x));let right=acc.some(x=>norm(val)===x);if(ei===6)right=norm(val)===norm(a);if(right)correct++;});
+section.querySelector('.score').textContent='Điểm hiện tại: '+correct+' / '+answered+' câu đã nhập';
+document.getElementById('totalScore').textContent='Bài tự luận đang chấm từng câu riêng; điểm được cập nhật khi bạn bấm “Check this answer”.';
+}
+function checkExercise(ei,section,live=false){let ex=exercises[ei],boxes=[...section.querySelectorAll('.q')],correct=0,answered=0;
+boxes.forEach((box,qi)=>{let q=ex.qs[qi],user='',ok=false,answer='',isAnswered=false;
+if(ex.type==='text'){user=box.querySelector('.typed').value;isAnswered=!!user.trim();answer=q[1];let acceptable=answer.split('/').map(x=>norm(x));ok=acceptable.some(a=>norm(user)===a);if(ei===6){ok=norm(user)===norm(answer)}}
+else {let selected=box.querySelector('input[type=radio]:checked');if(selected){user=selected.value;isAnswered=true;ok=Number(user)===q[2];}answer=ex.type==='mc'?q[1][q[2]]:'';}
+let fb=box.querySelector('.feedback'),explain=box.querySelector('.explain');
+if(!isAnswered){fb.className='feedback';fb.textContent='';explain.style.display='none';return;}
+answered++;if(ok)correct++;fb.className='feedback '+(ok?'correct':'wrong');fb.textContent=ok?'Đúng rồi! ✓':'Chưa đúng. Đáp án: '+(ex.type==='text'?q[1]:String.fromCharCode(65+q[2])+'. '+answer);
+let extra=vnSupport[ei]?.[qi]||['Nghĩa tiếng Việt: '+(q[0]||''),'Hãy đối chiếu nghĩa của câu, từ vựng và cấu trúc ngữ pháp để chọn đáp án.'];
+let translation=extra[0], explanation=extra[1];
+if(ei===0){translation='Yêu cầu: '+q[0];}
+explain.style.display='block';explain.innerHTML='<b>Dịch nghĩa:</b> '+esc(translation)+'\n\n<b>Giải thích:</b> '+esc(explanation)+'\n\n<b>Đáp án đúng:</b> '+esc(ex.type==='text'?q[1]:String.fromCharCode(65+q[2])+'. '+answer);
+});
+let score=section.querySelector('.score');score.textContent=live?'Kết quả hiện tại: '+correct+' / '+answered+' câu đã chọn':'Điểm: '+correct+' / '+ex.qs.length+' ('+Math.round(correct/ex.qs.length*100)+'%)';
+document.getElementById('totalScore').textContent='Đã làm: '+[...document.querySelectorAll('#app section')].filter(s=>s.querySelector('.score').textContent.includes('/')&&!s.querySelector('.score').textContent.includes('not checked')).length+' / '+exercises.length+' phần (điểm từng phần được tính riêng).';
+}
+render();
+</script>
+</body>
+</html>
